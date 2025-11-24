@@ -66,11 +66,11 @@ class NotificationListener < BaseListener
     conversation.inbox.members.each do |agent|
       next if agent.id == message.sender_id
 
-      NotificationBuilder.new(
+     NotificationBuilder.new(
         notification_type: 'conversation_new_message',
         user: agent,
         account: account,
-        primary_actor: message
+        primary_actor: conversation
       ).perform
     end
   end
