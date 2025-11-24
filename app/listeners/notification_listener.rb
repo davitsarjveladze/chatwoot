@@ -48,9 +48,30 @@ class NotificationListener < BaseListener
   end
 
   def message_created(event)
-    message = extract_message_and_account(event)[0]
+    message, account = extract_message_and_account(event)
+    conversation = message.conversation
 
+    # Ignore pending conversations or internal/private notes
+    return if conversation.pending?
+    return if message.private?
+
+    # Only notify on incoming customer messages to avoid agent-to-agent spam
+    return unless message.incoming?
+
+    # Keep native Chatwoot behaviors
     Messages::MentionService.new(message: message).perform
     Messages::NewMessageNotificationService.new(message: message).perform
+
+    # Notify every agent in the inbox with the message as the actor (push shows message content)
+    conversation.inbox.members.each do |agent|
+      next if agent.id == message.sender_id
+
+      NotificationBuilder.new(
+        notification_type: 'conversation_new_message',
+        user: agent,
+        account: account,
+        primary_actor: message
+      ).perform
+    end
   end
 end
