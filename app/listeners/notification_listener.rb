@@ -58,7 +58,7 @@ class NotificationListener < BaseListener
     # If you keep Chatwoot's default new-message service,
     # you'll likely generate duplicate notifications.
     # Comment it out if you're notifying everyone manually.
-    # Messages::NewMessageNotificationService.new(message: message).perform
+    Messages::NewMessageNotificationService.new(message: message).perform
 
     conversation.inbox.members.each do |agent|
       next if agent.id == message.sender_id
